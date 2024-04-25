@@ -12,8 +12,8 @@ namespace MetaActionGenerators.CLI
     {
         [Option("domain", Required = true, HelpText = "Path to the domain file")]
         public string DomainPath { get; set; } = "";
-        [Option("problem", Required = true, HelpText = "Path to the problem file")]
-        public string ProblemPath { get; set; } = "";
+        [Option("problems", Required = true, HelpText = "Path to the problem files")]
+        public IEnumerable<string> ProblemsPath { get; set; } = new List<string>();
         [Option("generator", Required = true, HelpText = "What generator to use.")]
         public GeneratorOptions GeneratorOption { get; set; }
 

@@ -2,6 +2,7 @@
 using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
+using PDDLSharp.Models.PDDL.Problem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,8 @@ namespace MetaActionGenerators.CandidateGenerators.MacroReductionMetaAction
     public class MacroReductionMetaActions : BaseCandidateGenerator
     {
         public ActionDecl Macro { get; set; }
-        public MacroReductionMetaActions(PDDLDecl decl, ActionDecl macro) : base(decl)
+
+        public MacroReductionMetaActions(DomainDecl domain, List<ProblemDecl> problems, ActionDecl macro) : base(domain, problems)
         {
             Macro = macro;
         }

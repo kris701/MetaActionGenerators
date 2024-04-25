@@ -2,21 +2,23 @@
 using MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction;
 using MetaActionGenerators.CandidateGenerators.CSMMacrosMetaAction;
 using PDDLSharp.Models.PDDL;
+using PDDLSharp.Models.PDDL.Domain;
+using PDDLSharp.Models.PDDL.Problem;
 
 namespace MetaActionGenerators
 {
     public static class MetaGeneratorBuilder
     {
         public enum GeneratorOptions { CPDDLMutexed, Flipped, Predicate, Stripped, PDDLSharpMacrosReductionMetaAction }
-        private static Dictionary<GeneratorOptions, Func<PDDLDecl, Dictionary<string, string>, ICandidateGenerator>> _dict = new Dictionary<GeneratorOptions, Func<PDDLDecl, Dictionary<string, string>, ICandidateGenerator>>()
+        private static Dictionary<GeneratorOptions, Func<DomainDecl, List<ProblemDecl>, Dictionary<string, string>, ICandidateGenerator>> _dict = new Dictionary<GeneratorOptions, Func<DomainDecl, List<ProblemDecl>, Dictionary<string, string>, ICandidateGenerator>>()
         {
-            { GeneratorOptions.CPDDLMutexed, (d, a) => new CPDDLMutexedMetaActions(a, d) },
-            { GeneratorOptions.Flipped, (d, a) => new FlipMetaActions(d) },
-            { GeneratorOptions.Predicate, (d, a) => new PredicateMetaActions(d) },
-            { GeneratorOptions.Stripped, (d, a) => new StrippedMetaActions(d) },
-            { GeneratorOptions.PDDLSharpMacrosReductionMetaAction, (d, a) => new PDDLSharpMutexedMetaActions(a, d) },
+            { GeneratorOptions.CPDDLMutexed, (d, p, a) => new CPDDLMutexedMetaActions(a, d, p) },
+            { GeneratorOptions.Flipped, (d, p, a) => new FlipMetaActions(d, p) },
+            { GeneratorOptions.Predicate, (d, p, a) => new PredicateMetaActions(d, p) },
+            { GeneratorOptions.Stripped, (d, p, a) => new StrippedMetaActions(d, p) },
+            { GeneratorOptions.PDDLSharpMacrosReductionMetaAction, (d, p, a) => new PDDLSharpMutexedMetaActions(a, d, p) },
         };
 
-        public static ICandidateGenerator GetGenerator(GeneratorOptions opt, PDDLDecl decl, Dictionary<string, string> args) => _dict[opt](decl, args);
+        public static ICandidateGenerator GetGenerator(GeneratorOptions opt, DomainDecl domain, List<ProblemDecl> problems, Dictionary<string, string> args) => _dict[opt](domain, problems, args);
     }
 }

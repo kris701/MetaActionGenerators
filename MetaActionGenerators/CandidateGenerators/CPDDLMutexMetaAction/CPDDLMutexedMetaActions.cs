@@ -5,6 +5,7 @@ using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Overloads;
+using PDDLSharp.Models.PDDL.Problem;
 using System.Data;
 using System.Diagnostics;
 
@@ -18,7 +19,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             { "tempFolder", "" }
         };
 
-        public CPDDLMutexedMetaActions(Dictionary<string, string> generatorArgs, PDDLDecl decl) : base(decl)
+        public CPDDLMutexedMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
         {
             HandleArgs(generatorArgs);
         }
@@ -27,19 +28,20 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
         {
             if (!File.Exists(GeneratorArgs["cpddlExecutable"]))
                 throw new FileNotFoundException($"Could not find the file: {GeneratorArgs["cpddlExecutable"]}");
-            if (Decl.Domain.Predicates == null)
+            if (Domain.Predicates == null)
                 throw new Exception("No predicates defined in domain!");
 
-            var rules = ExecuteCPDDL(Decl);
+            var decl = new PDDLDecl(Domain, Problems[LargestProblem()]);
+            var rules = ExecuteCPDDL(decl);
 
             var candidates = new List<ActionDecl>();
-            foreach (var predicate in Decl.Domain.Predicates.Predicates)
+            foreach (var predicate in Domain.Predicates.Predicates)
             {
                 if (!Statics.Any(x => x.Name.ToUpper() == predicate.Name.ToUpper()))
                 {
                     bool invarianted = rules.Any(x => x.Any(y => y.Predicate == predicate.Name));
                     if (invarianted)
-                        candidates.AddRange(GeneateInvariantSafeCandidates(rules, Decl, predicate));
+                        candidates.AddRange(GeneateInvariantSafeCandidates(rules, decl, predicate));
                     else
                     {
                         candidates.Add(GenerateMetaAction(
@@ -54,7 +56,26 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                 }
             }
 
-            return candidates.Distinct(Decl.Domain.Actions);
+            return candidates.Distinct(Domain.Actions);
+        }
+
+        private int LargestProblem()
+        {
+            var codeGenerator = new PDDLCodeGenerator(new ErrorListener());
+            int largestIndex = -1;
+            int largestSize = -1;
+
+            for(int i = 0; i < Problems.Count; i++)
+            {
+                var text = codeGenerator.Generate(Problems[i]);
+                if (text.Length > largestSize)
+                {
+                    largestSize = text.Length;
+                    largestIndex = i;
+                }
+            }
+
+            return largestIndex;
         }
 
         private List<List<PredicateRule>> ExecuteCPDDL(PDDLDecl pddlDecl)

@@ -2,6 +2,7 @@
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Overloads;
+using PDDLSharp.Models.PDDL.Problem;
 
 namespace MetaActionGenerators.CandidateGenerators
 {
@@ -10,14 +11,14 @@ namespace MetaActionGenerators.CandidateGenerators
     /// </summary>
     public class StrippedMetaActions : BaseCandidateGenerator
     {
-        public StrippedMetaActions(PDDLDecl decl) : base(decl)
+        public StrippedMetaActions(DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
         {
         }
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
             var candidates = new List<ActionDecl>();
-            foreach (var action in Decl.Domain.Actions)
+            foreach (var action in Domain.Actions)
             {
                 action.EnsureAnd();
                 if (action.Effects is AndExp and)
@@ -27,7 +28,7 @@ namespace MetaActionGenerators.CandidateGenerators
                         and.Children));
             }
 
-            return candidates.Distinct(Decl.Domain.Actions);
+            return candidates.Distinct(Domain.Actions);
         }
     }
 }

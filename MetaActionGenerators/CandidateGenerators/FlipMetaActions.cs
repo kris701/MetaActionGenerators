@@ -2,6 +2,7 @@
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Overloads;
+using PDDLSharp.Models.PDDL.Problem;
 
 namespace MetaActionGenerators.CandidateGenerators
 {
@@ -10,17 +11,17 @@ namespace MetaActionGenerators.CandidateGenerators
     /// </summary>
     public class FlipMetaActions : BaseCandidateGenerator
     {
-        public FlipMetaActions(PDDLDecl decl) : base(decl)
+        public FlipMetaActions(DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
         {
         }
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            if (Decl.Domain.Predicates == null)
+            if (Domain.Predicates == null)
                 throw new Exception("No predicates defined in domain!");
 
             var candidates = new List<ActionDecl>();
-            foreach (var predicate in Decl.Domain.Predicates.Predicates)
+            foreach (var predicate in Domain.Predicates.Predicates)
             {
                 if (!Statics.Any(x => x.Name.ToUpper() == predicate.Name.ToUpper()))
                 {
@@ -35,7 +36,7 @@ namespace MetaActionGenerators.CandidateGenerators
                 }
             }
 
-            return candidates.Distinct(Decl.Domain.Actions);
+            return candidates.Distinct(Domain.Actions);
         }
     }
 }

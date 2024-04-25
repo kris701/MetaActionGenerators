@@ -3,6 +3,7 @@ using PDDLSharp.ErrorListeners;
 using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
+using PDDLSharp.Models.PDDL.Problem;
 using PDDLSharp.Tools;
 using PDDLSharp.Translators.Tools;
 
@@ -11,16 +12,17 @@ namespace MetaActionGenerators.CandidateGenerators
     public abstract class BaseCandidateGenerator : ICandidateGenerator
     {
         public virtual Dictionary<string, string> GeneratorArgs { get; internal set; } = new Dictionary<string, string>();
-        public PDDLDecl Decl { get; }
+        public DomainDecl Domain { get; }
+        public List<ProblemDecl> Problems { get; }
 
         public List<PredicateExp> Statics = new List<PredicateExp>();
         public List<PredicateExp> SimpleStatics = new List<PredicateExp>();
 
-        protected BaseCandidateGenerator(PDDLDecl decl)
+        protected BaseCandidateGenerator(DomainDecl domain, List<ProblemDecl> problems)
         {
-            Decl = decl;
-            ContextualizeIfNotAlready(Decl);
-            Statics = SimpleStaticPredicateDetector.FindStaticPredicates(decl);
+            Domain = domain;
+            Problems = problems;
+            Statics = SimpleStaticPredicateDetector.FindStaticPredicates(new PDDLDecl(domain, problems[0]));
             Statics.Add(new PredicateExp("="));
             SimpleStatics = new List<PredicateExp>(Statics.Count);
             foreach (var staticItem in Statics)
@@ -66,16 +68,6 @@ namespace MetaActionGenerators.CandidateGenerators
 
         internal abstract List<ActionDecl> GenerateCandidatesInner();
 
-        internal void ContextualizeIfNotAlready(PDDLDecl pddlDecl)
-        {
-            if (!pddlDecl.IsContextualised)
-            {
-                var listener = new ErrorListener();
-                var contextualiser = new PDDLContextualiser(listener);
-                contextualiser.Contexturalise(pddlDecl);
-            }
-        }
-
         internal ActionDecl GenerateMetaAction(string actionName, List<IExp> preconditions, List<IExp> effects)
         {
             var newAction = new ActionDecl(actionName);
@@ -91,21 +83,6 @@ namespace MetaActionGenerators.CandidateGenerators
                         newAction.Parameters.Values.Add(arg.Copy());
 
             return newAction;
-        }
-
-        internal PredicateExp GetEqualsPredicate(PredicateExp pred1, PredicateExp pred2)
-        {
-            var args = new List<NameExp>();
-            for (int i = 0; i < pred1.Arguments.Count; i++)
-            {
-                if (pred1.Arguments[i].Name != pred2.Arguments[i].Name)
-                {
-                    args.Add(pred1.Arguments[i]);
-                    args.Add(pred2.Arguments[i]);
-                }
-            }
-
-            return new PredicateExp("=", args);
         }
     }
 }

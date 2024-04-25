@@ -24,15 +24,19 @@ namespace MetaActionGenerators.CLI
         public static void Run(Options opts)
         {
             opts.DomainPath = PathHelper.RootPath(opts.DomainPath);
-            opts.ProblemPath = PathHelper.RootPath(opts.ProblemPath);
+            var problemFiles = new List<string>(opts.ProblemsPath);
+            for (int i = 0; i < problemFiles.Count; i++)
+                problemFiles[i] = PathHelper.RootPath(problemFiles[i]);
+            opts.ProblemsPath = problemFiles;
             opts.OutPath = PathHelper.RootPath(opts.OutPath);
             PathHelper.RecratePath(opts.OutPath);
             Console.WriteLine("Parsing problem and domain files...");
             var listener = new ErrorListener();
             var parser = new PDDLParser(listener);
             var domain = parser.ParseAs<DomainDecl>(new FileInfo(opts.DomainPath));
-            var problem = parser.ParseAs<ProblemDecl>(new FileInfo(opts.ProblemPath));
-            var decl = new PDDLDecl(domain, problem);
+            var problems = new List<ProblemDecl>();
+            foreach(var problemFile in opts.ProblemsPath)
+                problems.Add(parser.ParseAs<ProblemDecl>(new FileInfo(problemFile)));
 
             Console.WriteLine("Parsing args...");
             var args = new Dictionary<string, string>();
@@ -44,7 +48,7 @@ namespace MetaActionGenerators.CLI
             }
 
             Console.WriteLine("Initialising Generator...");
-            var generator = MetaGeneratorBuilder.GetGenerator(opts.GeneratorOption, decl, args);
+            var generator = MetaGeneratorBuilder.GetGenerator(opts.GeneratorOption, domain, problems, args);
 
             Console.WriteLine("Generating Candidates...");
             var candidates = generator.GenerateCandidates();
