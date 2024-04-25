@@ -14,7 +14,7 @@
 # Meta Action Generators
 This is a project that is a collection of several different meta action generators.
 Some of the generators have some dependencies they need to work, however they are all described in their respective section.
-You can either use the NuGet package to generate meta actions, or use `dotnet run` on the CLI project.
+You can either use the [NuGet Package](https://www.nuget.org/packages/MetaActionGenerators/) to generate meta actions, or use `dotnet run` on the CLI project.
 
 ## Generators
 Here is a short description of all the different generators that this project includes.
@@ -115,7 +115,7 @@ An example of a meta action from this generator can be seen below:
 
 ### CPDDL Mutex Meta Actions
 These are meta actions that is based on Predicate meta actions, however it will force all the candidates to uphold mutex groups in the domain.
-This generator used CPDDL to find lifted mutex groups, and then fixes the predicate meta actions that violate the groups.
+This generator used [CPDDL](https://gitlab.com/danfis/cpddl) to find lifted mutex groups, and then fixes the predicate meta actions that violate the groups.
 
 An example of a meta action from this generator can be seen below:
 ```
