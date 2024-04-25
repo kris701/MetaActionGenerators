@@ -40,7 +40,7 @@ namespace MetaActionGenerators.CLI
             foreach(var keyvalue in opts.Args)
             {
                 var key = keyvalue.Substring(0, keyvalue.IndexOf(';')).Trim();
-                var value = keyvalue.Substring(keyvalue.IndexOf(';')).Trim();
+                var value = keyvalue.Substring(keyvalue.IndexOf(';') + 1).Trim();
                 args.Add(key, value);
             }
 

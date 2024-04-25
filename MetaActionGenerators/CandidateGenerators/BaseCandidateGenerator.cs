@@ -28,12 +28,39 @@ namespace MetaActionGenerators.CandidateGenerators
                     SimpleStatics.Add(staticItem);
         }
 
+        internal void HandleArgs(Dictionary<string, string> generatorArgs)
+        {
+            var toSet = GeneratorArgs.Keys.ToList();
+            toSet.RemoveAll(x => GeneratorArgs[x] != "");
+            foreach (var key in generatorArgs.Keys)
+            {
+                if (GeneratorArgs.ContainsKey(key))
+                {
+                    GeneratorArgs[key] = generatorArgs[key];
+                    toSet.Remove(key);
+                }
+            }
+            if (toSet.Count > 0)
+                throw new Exception($"Missing argument: {toSet[0]}");
+        }
+
         public List<ActionDecl> GenerateCandidates()
         {
             var candidates = GenerateCandidatesInner();
             foreach (var candidate in candidates)
                 if (!candidate.Name.Contains('$'))
                     candidate.Name = $"${candidate.Name}";
+            while (candidates.DistinctBy(x => x.Name).Count() != candidates.Count)
+            {
+                foreach (var action in candidates)
+                {
+                    var others = candidates.Where(x => x.Name == action.Name);
+                    int counter = 0;
+                    foreach (var other in others)
+                        if (action != other)
+                            other.Name = $"{other.Name}_{counter++}";
+                }
+            }
             return candidates;
         }
 

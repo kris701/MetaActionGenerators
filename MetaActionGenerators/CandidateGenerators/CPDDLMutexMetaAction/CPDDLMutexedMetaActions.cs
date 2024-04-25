@@ -8,7 +8,7 @@ using PDDLSharp.Models.PDDL.Overloads;
 using System.Data;
 using System.Diagnostics;
 
-namespace MetaActionGenerators.CandidateGenerators
+namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 {
     public class CPDDLMutexedMetaActions : BaseCandidateGenerator
     {
@@ -18,19 +18,9 @@ namespace MetaActionGenerators.CandidateGenerators
             { "tempFolder", "" }
         };
 
-        public CPDDLMutexedMetaActions(Dictionary<string, string>  generatorArgs, PDDLDecl decl) : base(decl)
+        public CPDDLMutexedMetaActions(Dictionary<string, string> generatorArgs, PDDLDecl decl) : base(decl)
         {
-            var toSet = generatorArgs.Keys.ToList();
-            foreach (var key in generatorArgs.Keys)
-            {
-                if (GeneratorArgs.ContainsKey(key))
-                {
-                    GeneratorArgs[key] = generatorArgs[key];
-                    toSet.Remove(key);
-                }
-            }
-            if (toSet.Count > 0)
-                throw new Exception($"Missing argument: {toSet[0]}");
+            HandleArgs(generatorArgs);
         }
 
         internal override List<ActionDecl> GenerateCandidatesInner()
@@ -141,7 +131,7 @@ namespace MetaActionGenerators.CandidateGenerators
 
             // Make sure rule argument IDs are unique 
             var index = 0;
-            foreach(var ruleSet in rules)
+            foreach (var ruleSet in rules)
             {
                 foreach (var rule in ruleSet)
                     for (int i = 0; i < rule.Args.Count; i++)
@@ -269,53 +259,6 @@ namespace MetaActionGenerators.CandidateGenerators
             var newNot = new NotExp(exp);
             newNot.Child.Parent = newNot;
             return newNot;
-        }
-
-        private class Candidate
-        {
-            public List<IExp> Preconditions { get; set; }
-            public List<IExp> Effects { get; set; }
-
-            public Candidate(List<IExp> preconditions, List<IExp> effects)
-            {
-                Preconditions = preconditions;
-                Effects = effects;
-            }
-
-            public Candidate Copy()
-            {
-                var preconditions = new List<IExp>();
-                foreach (var precon in Preconditions)
-                    preconditions.Add((IExp)precon.Copy());
-                var effects = new List<IExp>();
-                foreach (var effect in Effects)
-                    effects.Add((IExp)effect.Copy());
-
-                return new Candidate(preconditions, effects);
-            }
-        }
-
-        private class PredicateRule
-        {
-            public string Predicate { get; set; }
-            public List<string> Args { get; set; }
-
-            public PredicateRule(string predicate, List<string> args)
-            {
-                Predicate = predicate;
-                Args = args;
-            }
-
-            public override string ToString()
-            {
-                var args = "";
-                foreach (var arg in Args)
-                    args += $"{arg}, ";
-                args = args.Trim();
-                if (args.EndsWith(','))
-                    args = args.Substring(0, args.Length - 1);
-                return $"{Predicate}: {args}";
-            }
         }
     }
 }
