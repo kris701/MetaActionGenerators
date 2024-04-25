@@ -4,9 +4,42 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <Title>Meta Action Generators</Title>
+	  <Authors>Kristian Skov Johansen</Authors>
+	  <Description>A package to generate meta action candidates.</Description>
+	  <RepositoryUrl>https://github.com/kris701/MetaActionGenerators</RepositoryUrl>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
-  <ItemGroup>
+	<PropertyGroup>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<Version>1.0.7</Version>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageIcon>logo.png</PackageIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="logo.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE.txt">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
     <PackageReference Include="PDDLSharp" Version="1.5.2" />
   </ItemGroup>
 

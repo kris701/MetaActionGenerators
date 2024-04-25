@@ -1,6 +1,20 @@
+<p align="center">
+    <img src="https://github.com/kris701/MetaActionGenerators/assets/22596587/50aed7eb-2091-4425-8e48-359d3e1c84a9" width="200" height="200" />
+</p>
+
+[![Build and Publish](https://github.com/kris701/MetaActionGenerators/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/kris701/MetaActionGenerators/actions/workflows/dotnet-desktop.yml)
+![Nuget](https://img.shields.io/nuget/v/MetaActionGenerators)
+![Nuget](https://img.shields.io/nuget/dt/MetaActionGenerators)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/kris701/MetaActionGenerators/main)
+![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/kris701/MetaActionGenerators)
+![Static Badge](https://img.shields.io/badge/Platform-Windows-blue)
+![Static Badge](https://img.shields.io/badge/Platform-Linux-blue)
+![Static Badge](https://img.shields.io/badge/Framework-dotnet--8.0-green)
+
 # Meta Action Generators
 This is a project that is a collection of several different meta action generators.
 Some of the generators have some dependencies they need to work, however they are all described in their respective section.
+You can either use the NuGet package to generate meta actions, or use `dotnet run` on the CLI project.
 
 ## Generators
 Here is a short description of all the different generators that this project includes.
