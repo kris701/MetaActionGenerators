@@ -11,9 +11,9 @@ using PDDLSharp.Parsers.FastDownward.Plans;
 using PDDLSharp.Parsers.PDDL;
 using PDDLSharp.Toolkit.MacroGenerators;
 
-namespace MetaActionGenerators.CandidateGenerators.PDDLSharpMacrosMetaAction
+namespace MetaActionGenerators.CandidateGenerators
 {
-    public class PDDLSharpMutexedMetaActions : BaseCandidateGenerator
+    public class PDDLSharpMacroReductionMetaActions : BaseCandidateGenerator
     {
         public override List<Arg> Args { get; } = new List<Arg>()
         {
@@ -23,7 +23,7 @@ namespace MetaActionGenerators.CandidateGenerators.PDDLSharpMacrosMetaAction
             new Arg("logFD", false)
         };
 
-        public PDDLSharpMutexedMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
+        public PDDLSharpMacroReductionMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
         {
             HandleArgs(generatorArgs);
         }
