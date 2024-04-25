@@ -1,17 +1,15 @@
-﻿using PDDLSharp.Contextualisers.PDDL;
-using PDDLSharp.ErrorListeners;
+﻿using MetaActionGenerators.ArgumentSystem;
 using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Problem;
-using PDDLSharp.Tools;
 using PDDLSharp.Translators.Tools;
 
 namespace MetaActionGenerators.CandidateGenerators
 {
     public abstract class BaseCandidateGenerator : ICandidateGenerator
     {
-        public virtual Dictionary<string, string> GeneratorArgs { get; internal set; } = new Dictionary<string, string>();
+        public virtual List<Arg> Args { get; } = new List<Arg>();
         public DomainDecl Domain { get; }
         public List<ProblemDecl> Problems { get; }
 
@@ -30,15 +28,25 @@ namespace MetaActionGenerators.CandidateGenerators
                     SimpleStatics.Add(staticItem);
         }
 
+        internal T GetArgument<T>(string key)
+        {
+            var target = Args.FirstOrDefault(x => x.Key == key);
+            if (target == null)
+                throw new ArgumentNullException($"No argument with the key '{key}'!");
+            if (target.Value == null)
+                throw new ArgumentNullException($"Argument '{key}' was not set!");
+            return (T)Convert.ChangeType(target.Value, typeof(T));
+        }
+
         internal void HandleArgs(Dictionary<string, string> generatorArgs)
         {
-            var toSet = GeneratorArgs.Keys.ToList();
-            toSet.RemoveAll(x => GeneratorArgs[x] != "");
+            var toSet = Args.Where(x => x.Value == null).Select(x => x.Key).ToList();
             foreach (var key in generatorArgs.Keys)
             {
-                if (GeneratorArgs.ContainsKey(key))
+                var target = Args.FirstOrDefault(x => x.Key == key);
+                if (target != null)
                 {
-                    GeneratorArgs[key] = generatorArgs[key];
+                    target.Value = generatorArgs[key];
                     toSet.Remove(key);
                 }
             }

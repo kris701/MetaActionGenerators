@@ -1,4 +1,5 @@
-﻿using MetaActionGenerators.Helpers;
+﻿using MetaActionGenerators.ArgumentSystem;
+using MetaActionGenerators.Helpers;
 using PDDLSharp.CodeGenerators.PDDL;
 using PDDLSharp.ErrorListeners;
 using PDDLSharp.Models.PDDL;
@@ -13,10 +14,10 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 {
     public class CPDDLMutexedMetaActions : BaseCandidateGenerator
     {
-        public override Dictionary<string, string> GeneratorArgs { get; internal set; } = new Dictionary<string, string>()
+        public override List<Arg> Args { get; } = new List<Arg>()
         {
-            { "cpddlExecutable", "" },
-            { "tempFolder", "" }
+            new Arg("cpddlExecutable"),
+            new Arg("tempFolder")
         };
 
         public CPDDLMutexedMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
@@ -26,8 +27,8 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            if (!File.Exists(GeneratorArgs["cpddlExecutable"]))
-                throw new FileNotFoundException($"Could not find the file: {GeneratorArgs["cpddlExecutable"]}");
+            if (!File.Exists(GetArgument<string>("cpddlExecutable")))
+                throw new FileNotFoundException($"Could not find the file: {GetArgument<string>("cpddlExecutable")}");
             if (Domain.Predicates == null)
                 throw new Exception("No predicates defined in domain!");
 
@@ -65,7 +66,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             int largestIndex = -1;
             int largestSize = -1;
 
-            for(int i = 0; i < Problems.Count; i++)
+            for (int i = 0; i < Problems.Count; i++)
             {
                 var text = codeGenerator.Generate(Problems[i]);
                 if (text.Length > largestSize)
@@ -80,33 +81,33 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 
         private List<List<PredicateRule>> ExecuteCPDDL(PDDLDecl pddlDecl)
         {
-            PathHelper.RecratePath(GeneratorArgs["tempFolder"]);
+            PathHelper.RecratePath(GetArgument<string>("tempFolder"));
             var codeGenerator = new PDDLCodeGenerator(new ErrorListener());
-            codeGenerator.Generate(pddlDecl.Domain, Path.Combine(GeneratorArgs["tempFolder"], "domain.pddl"));
-            codeGenerator.Generate(pddlDecl.Problem, Path.Combine(GeneratorArgs["tempFolder"], "problem.pddl"));
+            codeGenerator.Generate(pddlDecl.Domain, Path.Combine(GetArgument<string>("tempFolder"), "domain.pddl"));
+            codeGenerator.Generate(pddlDecl.Problem, Path.Combine(GetArgument<string>("tempFolder"), "problem.pddl"));
 
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo()
                 {
-                    FileName = GeneratorArgs["cpddlExecutable"],
+                    FileName = GetArgument<string>("cpddlExecutable"),
                     Arguments = "--lmg-out output.txt --lmg-stop domain.pddl problem.pddl",
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
-                    WorkingDirectory = GeneratorArgs["tempFolder"]
+                    WorkingDirectory = GetArgument<string>("tempFolder")
                 }
             };
             process.Start();
             process.WaitForExit();
 
-            if (!File.Exists(Path.Combine(GeneratorArgs["tempFolder"], "output.txt")))
+            if (!File.Exists(Path.Combine(GetArgument<string>("tempFolder"), "output.txt")))
                 return new List<List<PredicateRule>>();
 
             var rules = new List<List<PredicateRule>>();
 
-            foreach (var line in File.ReadLines(Path.Combine(GeneratorArgs["tempFolder"], "output.txt")))
+            foreach (var line in File.ReadLines(Path.Combine(GetArgument<string>("tempFolder"), "output.txt")))
             {
                 if (line.EndsWith(":=1"))
                 {

@@ -3,11 +3,9 @@ using CommandLine.Text;
 using MetaActionGenerators.Helpers;
 using PDDLSharp.CodeGenerators.PDDL;
 using PDDLSharp.ErrorListeners;
-using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Problem;
 using PDDLSharp.Parsers.PDDL;
-using System;
 
 namespace MetaActionGenerators.CLI
 {
@@ -35,12 +33,12 @@ namespace MetaActionGenerators.CLI
             var parser = new PDDLParser(listener);
             var domain = parser.ParseAs<DomainDecl>(new FileInfo(opts.DomainPath));
             var problems = new List<ProblemDecl>();
-            foreach(var problemFile in opts.ProblemsPath)
+            foreach (var problemFile in opts.ProblemsPath)
                 problems.Add(parser.ParseAs<ProblemDecl>(new FileInfo(problemFile)));
 
             Console.WriteLine("Parsing args...");
             var args = new Dictionary<string, string>();
-            foreach(var keyvalue in opts.Args)
+            foreach (var keyvalue in opts.Args)
             {
                 var key = keyvalue.Substring(0, keyvalue.IndexOf(';')).Trim();
                 var value = keyvalue.Substring(keyvalue.IndexOf(';') + 1).Trim();

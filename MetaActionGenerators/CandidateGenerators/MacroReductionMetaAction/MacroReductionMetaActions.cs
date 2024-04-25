@@ -1,13 +1,7 @@
 ﻿using MetaActionGenerators.CandidateGenerators.MacroReductionMetaAction.Subtractors;
-using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Problem;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MetaActionGenerators.CandidateGenerators.MacroReductionMetaAction
 {

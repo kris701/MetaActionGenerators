@@ -6,7 +6,7 @@
     "WSL": {
       "commandName": "WSL2",
       "distributionName": "",
-      "commandLineArgs": "MetaActionGenerators.CLI.dll --out out --domain /home/kris/P10/Dependencies/learning-benchmarks/spanner/domain.pddl --problem /home/kris/P10/Dependencies/learning-benchmarks/spanner/training/easy/p50.pddl --generator PDDLSharpMacrosReductionMetaAction --args macroLimit;10 tempFolder;tmp fastDownwardPath;/home/kris/P10/Dependencies/fast-downward/fast-downward.py",
+      "commandLineArgs": "MetaActionGenerators.CLI.dll --out out --domain /home/kris/P10/Dependencies/learning-benchmarks/spanner/domain.pddl --problems /home/kris/P10/Dependencies/learning-benchmarks/spanner/training/easy/p01.pddl /home/kris/P10/Dependencies/learning-benchmarks/spanner/training/easy/p10.pddl /home/kris/P10/Dependencies/learning-benchmarks/spanner/training/easy/p50.pddl --generator PDDLSharpMacrosReductionMetaAction --args macroLimit;10 tempFolder;tmp fastDownwardPath;/home/kris/P10/Dependencies/fast-downward/fast-downward.py",
       "workingDirectory": ""
     }
   }
