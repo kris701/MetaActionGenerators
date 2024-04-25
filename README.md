@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/kris701/MetaActionGenerators/assets/22596587/50aed7eb-2091-4425-8e48-359d3e1c84a9" width="200" height="200" />
+    <img src="https://github.com/kris701/MetaActionGenerators/assets/22596587/1e293720-ce6e-4db6-a8f1-ecbe115362ce" width="200" height="200" />
 </p>
 
 [![Build and Publish](https://github.com/kris701/MetaActionGenerators/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/kris701/MetaActionGenerators/actions/workflows/dotnet-desktop.yml)
