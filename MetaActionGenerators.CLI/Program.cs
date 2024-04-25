@@ -26,8 +26,7 @@ namespace MetaActionGenerators.CLI
             opts.DomainPath = PathHelper.RootPath(opts.DomainPath);
             opts.ProblemPath = PathHelper.RootPath(opts.ProblemPath);
             opts.OutPath = PathHelper.RootPath(opts.OutPath);
-            if (!Directory.Exists(opts.OutPath))
-                Directory.CreateDirectory(opts.OutPath);
+            PathHelper.RecratePath(opts.OutPath);
             Console.WriteLine("Parsing problem and domain files...");
             var listener = new ErrorListener();
             var parser = new PDDLParser(listener);

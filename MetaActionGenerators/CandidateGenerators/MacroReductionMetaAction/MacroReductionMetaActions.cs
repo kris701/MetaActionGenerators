@@ -1,6 +1,7 @@
 ﻿using MetaActionGenerators.CandidateGenerators.MacroReductionMetaAction.Subtractors;
 using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
+using PDDLSharp.Models.PDDL.Expressions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,8 @@ namespace MetaActionGenerators.CandidateGenerators.MacroReductionMetaAction
             candidates.AddRange(effRemover.Generate(Macro));
             var additionalEffRemover = new RemoveEffectParameters();
             candidates.AddRange(additionalEffRemover.Generate(Macro));
+
+            candidates.RemoveAll(x => x.Effects is AndExp and && and.Children.Count == 0);
 
             return candidates;
         }

@@ -34,8 +34,7 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacrosMetaAction
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            if (!Directory.Exists(GeneratorArgs["tempFolder"]))
-                Directory.CreateDirectory(GeneratorArgs["tempFolder"]);
+            PathHelper.RecratePath(GeneratorArgs["tempFolder"]);
             var macroGenerator = new SequentialMacroGenerator(Decl);
             var macros = macroGenerator.FindMacros(GetPlans(), int.Parse(GeneratorArgs["macroLimit"]));
             var candidates = new List<ActionDecl>();
