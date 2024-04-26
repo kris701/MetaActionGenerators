@@ -40,18 +40,18 @@ namespace MetaActionGenerators.CandidateGenerators
 
         internal void HandleArgs(Dictionary<string, string> generatorArgs)
         {
-            var toSet = Args.Where(x => x.Value == null).Select(x => x.Key).ToList();
+            var toSet = Args.Where(x => x.Value == null).ToList();
             foreach (var key in generatorArgs.Keys)
             {
                 var target = Args.FirstOrDefault(x => x.Key == key);
                 if (target != null)
                 {
                     target.Value = generatorArgs[key];
-                    toSet.Remove(key);
+                    toSet.RemoveAll(x => x.Key == key);
                 }
             }
             if (toSet.Count > 0)
-                throw new Exception($"Missing argument: {toSet[0]}");
+                throw new Exception($"Missing argument: '{toSet[0].Key}', {toSet[0].Description}");
         }
 
         public List<ActionDecl> GenerateCandidates()

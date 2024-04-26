@@ -17,10 +17,10 @@ namespace MetaActionGenerators.CandidateGenerators
     {
         public override List<Arg> Args { get; } = new List<Arg>()
         {
-            new Arg("macroLimit"),
-            new Arg("tempFolder"),
-            new Arg("fastDownwardPath"),
-            new Arg("logFD", false)
+            new Arg("macroLimit", 10, "An integer limit to how many macros PDDLSharp should make."),
+            new Arg("tempFolder", "A folder to store temporary files."),
+            new Arg("fastDownwardPath", "A path to a build of Fast Downward. This should be to the `fast-downward.py` file."),
+            new Arg("logFD", false, "Output the stdout from Fast Downward into the console for debug purposes.")
         };
 
         public PDDLSharpMacroReductionMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)

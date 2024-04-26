@@ -16,8 +16,8 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
     {
         public override List<Arg> Args { get; } = new List<Arg>()
         {
-            new Arg("cpddlExecutable"),
-            new Arg("tempFolder")
+            new Arg("cpddlExecutable", "Path to a compiled binary of CPDDL, this should be the /bin/pddl file in the CPDDL repository."),
+            new Arg("tempFolder", "A path to a folder to store temporary files from the CPDDL execution.")
         };
 
         public CPDDLMutexedMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
