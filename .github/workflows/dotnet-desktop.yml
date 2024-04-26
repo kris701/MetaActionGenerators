@@ -16,6 +16,13 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
 
+      - name: Install dependencies 2
+        run: |
+          cd Dependencies
+          ./cpddl.sh
+          ./fastdownward.sh
+          cd ..
+
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
