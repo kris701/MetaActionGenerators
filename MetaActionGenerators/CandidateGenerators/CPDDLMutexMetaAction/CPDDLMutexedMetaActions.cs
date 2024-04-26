@@ -14,21 +14,19 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 {
     public class CPDDLMutexedMetaActions : BaseCandidateGenerator
     {
-        public override List<Arg> Args { get; } = new List<Arg>()
-        {
-            new Arg("cpddlExecutable", "Path to a compiled binary of CPDDL, this should be the /bin/pddl file in the CPDDL repository."),
-            new Arg("tempFolder", "A path to a folder to store temporary files from the CPDDL execution.")
-        };
-
         public CPDDLMutexedMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
         {
-            HandleArgs(generatorArgs);
+            Args = new ArgsHandler(new List<Arg>()
+            {
+                new Arg("cpddlExecutable", "Path to a compiled binary of CPDDL, this should be the /bin/pddl file in the CPDDL repository."),
+                new Arg("tempFolder", "A path to a folder to store temporary files from the CPDDL execution.")
+            }, generatorArgs);
         }
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            if (!File.Exists(GetArgument<string>("cpddlExecutable")))
-                throw new FileNotFoundException($"Could not find the file: {GetArgument<string>("cpddlExecutable")}");
+            if (!File.Exists(Args.GetArgument<string>("cpddlExecutable")))
+                throw new FileNotFoundException($"Could not find the file: {Args.GetArgument<string>("cpddlExecutable")}");
             if (Domain.Predicates == null)
                 throw new Exception("No predicates defined in domain!");
 
@@ -81,33 +79,33 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 
         private List<List<PredicateRule>> ExecuteCPDDL(PDDLDecl pddlDecl)
         {
-            PathHelper.RecratePath(GetArgument<string>("tempFolder"));
+            PathHelper.RecratePath(Args.GetArgument<string>("tempFolder"));
             var codeGenerator = new PDDLCodeGenerator(new ErrorListener());
-            codeGenerator.Generate(pddlDecl.Domain, Path.Combine(GetArgument<string>("tempFolder"), "domain.pddl"));
-            codeGenerator.Generate(pddlDecl.Problem, Path.Combine(GetArgument<string>("tempFolder"), "problem.pddl"));
+            codeGenerator.Generate(pddlDecl.Domain, Path.Combine(Args.GetArgument<string>("tempFolder"), "domain.pddl"));
+            codeGenerator.Generate(pddlDecl.Problem, Path.Combine(Args.GetArgument<string>("tempFolder"), "problem.pddl"));
 
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo()
                 {
-                    FileName = GetArgument<string>("cpddlExecutable"),
+                    FileName = Args.GetArgument<string>("cpddlExecutable"),
                     Arguments = "--lmg-out output.txt --lmg-stop domain.pddl problem.pddl",
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
-                    WorkingDirectory = GetArgument<string>("tempFolder")
+                    WorkingDirectory = Args.GetArgument<string>("tempFolder")
                 }
             };
             process.Start();
             process.WaitForExit();
 
-            if (!File.Exists(Path.Combine(GetArgument<string>("tempFolder"), "output.txt")))
+            if (!File.Exists(Path.Combine(Args.GetArgument<string>("tempFolder"), "output.txt")))
                 return new List<List<PredicateRule>>();
 
             var rules = new List<List<PredicateRule>>();
 
-            foreach (var line in File.ReadLines(Path.Combine(GetArgument<string>("tempFolder"), "output.txt")))
+            foreach (var line in File.ReadLines(Path.Combine(Args.GetArgument<string>("tempFolder"), "output.txt")))
             {
                 if (line.EndsWith(":=1"))
                 {

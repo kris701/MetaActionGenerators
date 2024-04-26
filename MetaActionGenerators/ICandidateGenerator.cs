@@ -6,7 +6,7 @@ namespace MetaActionGenerators
 {
     public interface ICandidateGenerator
     {
-        public List<Arg> Args { get; }
+        public ArgsHandler Args { get; }
         public DomainDecl Domain { get; }
         public List<ProblemDecl> Problems { get; }
 

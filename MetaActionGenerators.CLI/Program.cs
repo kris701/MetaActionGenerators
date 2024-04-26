@@ -27,16 +27,29 @@ namespace MetaActionGenerators.CLI
                 problemFiles[i] = PathHelper.RootPath(problemFiles[i]);
             opts.ProblemsPath = problemFiles;
             opts.OutPath = PathHelper.RootPath(opts.OutPath);
-            PathHelper.RecratePath(opts.OutPath);
+
+            Console.WriteLine("Tool started with following arguments:");
+            Console.WriteLine("======================================");
+            Console.WriteLine($"Domain: {opts.DomainPath}");
+            Console.WriteLine($"Problems: {string.Join(',', opts.ProblemsPath)}");
+            Console.WriteLine($"Output Path: {opts.OutPath}");
+            Console.WriteLine($"Generator: {Enum.GetName(opts.GeneratorOption)}");
+            Console.WriteLine($"Additional Arguments: {string.Join(',', opts.Args)}");
+            Console.WriteLine("======================================");
+
             Console.WriteLine("Parsing problem and domain files...");
             var listener = new ErrorListener();
             var parser = new PDDLParser(listener);
+            Console.WriteLine($"\tParsing Domain");
             var domain = parser.ParseAs<DomainDecl>(new FileInfo(opts.DomainPath));
+            Console.WriteLine($"\tParsing Problems");
+            Console.WriteLine($"\tA total of {opts.ProblemsPath.Count()} problems to parse.");
             var problems = new List<ProblemDecl>();
             foreach (var problemFile in opts.ProblemsPath)
                 problems.Add(parser.ParseAs<ProblemDecl>(new FileInfo(problemFile)));
 
             Console.WriteLine("Parsing args...");
+            Console.WriteLine($"\tA total of {opts.Args.Count()} additional arguments to parse.");
             var args = new Dictionary<string, string>();
             foreach (var keyvalue in opts.Args)
             {
@@ -45,14 +58,16 @@ namespace MetaActionGenerators.CLI
                 args.Add(key, value);
             }
 
-            Console.WriteLine("Initialising Generator...");
+            Console.WriteLine($"Initialising Generator '{Enum.GetName(opts.GeneratorOption)}'...");
             var generator = MetaGeneratorBuilder.GetGenerator(opts.GeneratorOption, domain, problems, args);
 
             Console.WriteLine("Generating Candidates...");
             var candidates = generator.GenerateCandidates();
-            Console.WriteLine($"A total of {candidates.Count} candidates generated.");
+            Console.WriteLine($"\tA total of {candidates.Count} candidates generated.");
 
             Console.WriteLine("Outputting Candidates...");
+            Console.WriteLine($"\tCandidates are outputted to '{opts.OutPath}'");
+            PathHelper.RecratePath(opts.OutPath);
             var codeGenerator = new PDDLCodeGenerator(listener);
             foreach (var candidate in candidates)
                 codeGenerator.Generate(candidate, Path.Combine(opts.OutPath, $"{candidate.Name}.pddl"));

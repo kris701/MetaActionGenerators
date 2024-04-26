@@ -9,7 +9,7 @@ namespace MetaActionGenerators.CandidateGenerators
 {
     public abstract class BaseCandidateGenerator : ICandidateGenerator
     {
-        public virtual List<Arg> Args { get; } = new List<Arg>();
+        public ArgsHandler Args { get; internal set; } = new ArgsHandler();
         public DomainDecl Domain { get; }
         public List<ProblemDecl> Problems { get; }
 
@@ -26,32 +26,6 @@ namespace MetaActionGenerators.CandidateGenerators
             foreach (var staticItem in Statics)
                 if (staticItem.Arguments.Count <= 1)
                     SimpleStatics.Add(staticItem);
-        }
-
-        internal T GetArgument<T>(string key)
-        {
-            var target = Args.FirstOrDefault(x => x.Key == key);
-            if (target == null)
-                throw new ArgumentNullException($"No argument with the key '{key}'!");
-            if (target.Value == null)
-                throw new ArgumentNullException($"Argument '{key}' was not set!");
-            return (T)Convert.ChangeType(target.Value, typeof(T));
-        }
-
-        internal void HandleArgs(Dictionary<string, string> generatorArgs)
-        {
-            var toSet = Args.Where(x => x.Value == null).ToList();
-            foreach (var key in generatorArgs.Keys)
-            {
-                var target = Args.FirstOrDefault(x => x.Key == key);
-                if (target != null)
-                {
-                    target.Value = generatorArgs[key];
-                    toSet.RemoveAll(x => x.Key == key);
-                }
-            }
-            if (toSet.Count > 0)
-                throw new Exception($"Missing argument: '{toSet[0].Key}', {toSet[0].Description}");
         }
 
         public List<ActionDecl> GenerateCandidates()

@@ -15,24 +15,22 @@ namespace MetaActionGenerators.CandidateGenerators
 {
     public class PDDLSharpMacroReductionMetaActions : BaseCandidateGenerator
     {
-        public override List<Arg> Args { get; } = new List<Arg>()
-        {
-            new Arg("macroLimit", 10, "An integer limit to how many macros PDDLSharp should make."),
-            new Arg("tempFolder", "A folder to store temporary files."),
-            new Arg("fastDownwardPath", "A path to a build of Fast Downward. This should be to the `fast-downward.py` file."),
-            new Arg("logFD", false, "Output the stdout from Fast Downward into the console for debug purposes.")
-        };
-
         public PDDLSharpMacroReductionMetaActions(Dictionary<string, string> generatorArgs, DomainDecl domain, List<ProblemDecl> problems) : base(domain, problems)
         {
-            HandleArgs(generatorArgs);
+            Args = new ArgsHandler(new List<Arg>()
+            {
+                new Arg("macroLimit", 10, "An integer limit to how many macros PDDLSharp should make."),
+                new Arg("tempFolder", "A folder to store temporary files."),
+                new Arg("fastDownwardPath", "A path to a build of Fast Downward. This should be to the `fast-downward.py` file."),
+                new Arg("logFD", false, "Output the stdout from Fast Downward into the console for debug purposes.")
+            }, generatorArgs);
         }
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            PathHelper.RecratePath(GetArgument<string>("tempFolder"));
+            PathHelper.RecratePath(Args.GetArgument<string>("tempFolder"));
             var macroGenerator = new SequentialMacroGenerator(new PDDLDecl(Domain, Problems[0]));
-            var macros = macroGenerator.FindMacros(GetPlans(), GetArgument<int>("macroLimit"));
+            var macros = macroGenerator.FindMacros(GetPlans(), Args.GetArgument<int>("macroLimit"));
             var candidates = new List<ActionDecl>();
 
             foreach (var macro in macros)
@@ -52,14 +50,14 @@ namespace MetaActionGenerators.CandidateGenerators
             var plans = new List<ActionPlan>();
             var codeGenerator = new PDDLCodeGenerator(listener);
 
-            var domainFile = Path.Combine(GetArgument<string>("tempFolder"), "tempDomain.pddl");
+            var domainFile = Path.Combine(Args.GetArgument<string>("tempFolder"), "tempDomain.pddl");
             codeGenerator.Generate(Domain, domainFile);
             foreach (var problem in Problems)
             {
-                var problemFile = Path.Combine(GetArgument<string>("tempFolder"), "tempProblem.pddl");
+                var problemFile = Path.Combine(Args.GetArgument<string>("tempFolder"), "tempProblem.pddl");
                 codeGenerator.Generate(problem, problemFile);
 
-                var doLog = GetArgument<bool>("logFD");
+                var doLog = Args.GetArgument<bool>("logFD");
                 using (ArgsCaller fdCaller = new ArgsCaller("python3"))
                 {
                     fdCaller.StdOut += (s, o) =>
@@ -72,16 +70,16 @@ namespace MetaActionGenerators.CandidateGenerators
                         if (doLog)
                             Console.WriteLine(o.Data);
                     };
-                    fdCaller.Arguments.Add(GetArgument<string>("fastDownwardPath"), "");
+                    fdCaller.Arguments.Add(Args.GetArgument<string>("fastDownwardPath"), "");
                     fdCaller.Arguments.Add("--alias", "lama-first");
                     fdCaller.Arguments.Add("--overall-time-limit", "5m");
                     fdCaller.Arguments.Add("--plan-file", "plan.plan");
                     fdCaller.Arguments.Add("tempDomain.pddl", "");
                     fdCaller.Arguments.Add("tempProblem.pddl", "");
-                    fdCaller.Process.StartInfo.WorkingDirectory = GetArgument<string>("tempFolder");
+                    fdCaller.Process.StartInfo.WorkingDirectory = Args.GetArgument<string>("tempFolder");
                     if (fdCaller.Run() != 0)
                         throw new Exception("Fast downward failed!");
-                    plans.Add(planParser.Parse(new FileInfo(Path.Combine(GetArgument<string>("tempFolder"), "plan.plan"))));
+                    plans.Add(planParser.Parse(new FileInfo(Path.Combine(Args.GetArgument<string>("tempFolder"), "plan.plan"))));
                 }
             }
 
