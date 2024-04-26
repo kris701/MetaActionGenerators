@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 Dependencies/**
 !Dependencies/README.md
+!Dependencies/*.sh
