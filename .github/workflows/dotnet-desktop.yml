@@ -19,8 +19,8 @@ jobs:
       - name: Install dependencies 2
         run: |
           cd Dependencies
-          sudo ./cpddl.sh
-          sudo ./fastdownward.sh
+          ./cpddl.sh
+          ./fastdownward.sh
           cd ..
 
       - name: Build
