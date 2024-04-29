@@ -18,20 +18,28 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
         {
             Args = new ArgsHandler(new List<Arg>()
             {
-                new Arg("cpddlExecutable", "Path to a compiled binary of CPDDL, this should be the /bin/pddl file in the CPDDL repository."),
-                new Arg("tempFolder", "A path to a folder to store temporary files from the CPDDL execution.")
+                new Arg("cpddlExecutable", "", "Path to a compiled binary of CPDDL, this should be the /bin/pddl file in the CPDDL repository."),
+                new Arg("tempFolder", "", "A path to a folder to store temporary files from the CPDDL execution."),
+                new Arg("cpddlOutput", "", "A path to the output of a CPDDL run (if you dont want to run the tool at runtime)")
             }, generatorArgs);
         }
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            if (!File.Exists(Args.GetArgument<string>("cpddlExecutable")))
-                throw new FileNotFoundException($"Could not find the file: {Args.GetArgument<string>("cpddlExecutable")}");
             if (Domain.Predicates == null)
                 throw new Exception("No predicates defined in domain!");
+            if (Args.GetArgument<string>("cpddlOutput") != "" && !File.Exists(Args.GetArgument<string>("cpddlOutput")))
+                throw new FileNotFoundException($"Could not find the CPDDL Output file: {Args.GetArgument<string>("cpddlOutput")}");
+            else if (!File.Exists(Args.GetArgument<string>("cpddlExecutable")))
+                throw new FileNotFoundException($"Could not find the file: {Args.GetArgument<string>("cpddlExecutable")}");
 
             var decl = new PDDLDecl(Domain, Problems[LargestProblem()]);
-            var rules = ExecuteCPDDL(decl);
+            var cpddlOut = "";
+            if (Args.GetArgument<string>("cpddlOutput") != "")
+                cpddlOut = File.ReadAllText(Args.GetArgument<string>("cpddlOutput"));
+            else
+                cpddlOut = ExecuteCPDDL(decl);
+            var rules = ParseCPDDLOutput(cpddlOut);
 
             var candidates = new List<ActionDecl>();
             foreach (var predicate in Domain.Predicates.Predicates)
@@ -77,7 +85,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             return largestIndex;
         }
 
-        private List<List<PredicateRule>> ExecuteCPDDL(PDDLDecl pddlDecl)
+        private string ExecuteCPDDL(PDDLDecl pddlDecl)
         {
             PathHelper.RecratePath(Args.GetArgument<string>("tempFolder"));
             var codeGenerator = new PDDLCodeGenerator(new ErrorListener());
@@ -101,11 +109,16 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             process.WaitForExit();
 
             if (!File.Exists(Path.Combine(Args.GetArgument<string>("tempFolder"), "output.txt")))
-                return new List<List<PredicateRule>>();
+                return "";
+            return File.ReadAllText(Path.Combine(Args.GetArgument<string>("tempFolder"), "output.txt"));
+        }
 
+        private List<List<PredicateRule>> ParseCPDDLOutput(string text)
+        {
             var rules = new List<List<PredicateRule>>();
 
-            foreach (var line in File.ReadLines(Path.Combine(Args.GetArgument<string>("tempFolder"), "output.txt")))
+            var lines = text.Split(Environment.NewLine);
+            foreach (var line in lines)
             {
                 if (line.EndsWith(":=1"))
                 {
