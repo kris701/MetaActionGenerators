@@ -1,0 +1,27 @@
+#!/bin/bash
+#~/Planners/lama/plan $1 $2 $3
+
+dir=`echo lama-$1 | sed 's/\//-/g'`
+mkdir $dir
+cd $dir
+
+p1=$1
+
+if [ ${p1:0:1} == "/" ]
+then
+p2=$2
+p3=$3
+else
+p1="../$1"
+p2="../$2"
+p3="../$3"
+fi
+
+python3 {{FDPATH}} --alias lama-first --plan-file plan.soln $p1 $p2
+
+mv -T plan.soln $p3
+
+rm *
+
+cd ..
+rmdir $dir

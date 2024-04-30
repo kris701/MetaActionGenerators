@@ -14,12 +14,20 @@
 
 	<PropertyGroup>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		<Version>1.0.5</Version>
+		<Version>1.0.6</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<PackageIcon>logo.png</PackageIcon>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="CandidateGenerators\CSMMacroReductionMetaAction\lama-script" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="CandidateGenerators\CSMMacroReductionMetaAction\lama-script" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="logo.png" Pack="true" PackagePath="" />
