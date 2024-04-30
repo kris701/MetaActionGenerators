@@ -26,7 +26,7 @@ namespace MetaActionGenerators.Tests.CandidateGenerators
                 { "csmPath", "../../../../Dependencies/CSMs" },
                 { "fastDownwardPath", "../../../../Dependencies/fast-downward/fast-downward.py" },
                 { "tempFolder", "tmp" },
-                { "log", "false" }
+                { "log", "true" }
             });
 
             // ACT

@@ -28,7 +28,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test --no-restore --verbosity detailed
   BuildAndPublish:
     needs: BuildAndTest
     runs-on: ubuntu-latest
