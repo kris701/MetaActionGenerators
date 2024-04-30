@@ -6,7 +6,7 @@
     "WSL": {
       "commandName": "WSL2",
       "distributionName": "",
-      "commandLineArgs": "MetaActionGenerators.CLI.dll --out out --domain /home/kris/P10/Dependencies/learning-benchmarks/miconic/domain.pddl --problems /home/kris/P10/Dependencies/learning-benchmarks/miconic/training/easy/p05.pddl /home/kris/P10/Dependencies/learning-benchmarks/miconic/training/easy/p10.pddl /home/kris/P10/Dependencies/learning-benchmarks/miconic/training/easy/p20.pddl --generator CSMMacroReduction --args csmPath;/home/kris/P10/Dependencies/CSMs tempFolder;tmp fastDownwardPath;/home/kris/P10/Dependencies/fast-downward/fast-downward.py",
+      "commandLineArgs": "MetaActionGenerators.CLI.dll --out out --domain /home/kris/P10/Dependencies/learning-benchmarks/blocksworld/domain.pddl --problems /home/kris/P10/Dependencies/learning-benchmarks/blocksworld/training/easy/p05.pddl /home/kris/P10/Dependencies/learning-benchmarks/blocksworld/training/easy/p10.pddl /home/kris/P10/Dependencies/learning-benchmarks/blocksworld/training/easy/p20.pddl --generator CSMMacroReduction --args csmPath;/home/kris/P10/Dependencies/CSMs tempFolder;tmp fastDownwardPath;/home/kris/P10/Dependencies/fast-downward/fast-downward.py",
       "workingDirectory": ""
     }
   }

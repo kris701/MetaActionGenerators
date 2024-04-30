@@ -116,6 +116,35 @@ An example of a meta action from this generator can be seen below:
 )
 ```
 
+### CSM Macro Reduction Meta Actions
+![Static Badge](https://img.shields.io/badge/Platform-Linux-blue)
+
+This generator is also based on reduction of macro actions.
+With this generator, the macros are generated with [CSM](https://github.com/lchrpa/CSMs), using the MUM and BloMa methods.
+
+This generator have the following arguments:
+
+|Argument|Description|Default|
+|--|--|--|
+|csmPath|The path to the CSMs folder. It should be the root folder of CSMs!||
+|tempFolder|A folder to store temporary files.||
+|fastDownwardPath|A path to a build of Fast Downward. This should be to the `fast-downward.py` file.||
+|log|Output stdout from CSM|false|
+
+An example of a meta action from this generator can be seen below:
+```
+(:action $unstack_mcr_putdown_1
+	:parameters (?underob - object)
+	:precondition (and 
+		(arm-empty))
+	:effect (and
+		(clear ?underob)
+		(arm-empty)
+	)
+)
+
+```
+
 ### Precondition Permutation Reduction Meta Actions
 ![Static Badge](https://img.shields.io/badge/Platform-Windows-blue)
 ![Static Badge](https://img.shields.io/badge/Platform-Linux-blue)
