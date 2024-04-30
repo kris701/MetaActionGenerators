@@ -27,8 +27,8 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
-            if (!File.Exists(Args.GetArgument<string>("csmPath")))
-                throw new FileNotFoundException($"Could not find the CSM folder: {Args.GetArgument<string>("csmPath")}");
+            if (!Directory.Exists(Args.GetArgument<string>("csmPath")))
+                throw new DirectoryNotFoundException($"Could not find the CSM folder: {Args.GetArgument<string>("csmPath")}");
             if (!File.Exists(Args.GetArgument<string>("fastDownwardPath")))
                 throw new FileNotFoundException($"Could not find the Fast Downward executable file: {Args.GetArgument<string>("fastDownwardPath")}");
 
