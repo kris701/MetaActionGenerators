@@ -6,6 +6,7 @@ using PDDLSharp.ErrorListeners;
 using PDDLSharp.Models.FastDownward.Plans;
 using PDDLSharp.Models.PDDL;
 using PDDLSharp.Models.PDDL.Domain;
+using PDDLSharp.Models.PDDL.Overloads;
 using PDDLSharp.Models.PDDL.Problem;
 using PDDLSharp.Parsers.FastDownward.Plans;
 using PDDLSharp.Parsers.PDDL;
@@ -39,7 +40,7 @@ namespace MetaActionGenerators.CandidateGenerators
                 candidates.AddRange(reducer.GenerateCandidates());
             }
 
-            return candidates;
+            return candidates.Distinct(Domain.Actions);
         }
 
         private List<ActionPlan> GetPlans()

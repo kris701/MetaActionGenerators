@@ -22,6 +22,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="CandidateGenerators\CSMMacroReductionMetaAction\lama-script" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="CandidateGenerators\CSMMacroReductionMetaAction\lama-script" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="logo.png" Pack="true" PackagePath="" />
 	</ItemGroup>
 
