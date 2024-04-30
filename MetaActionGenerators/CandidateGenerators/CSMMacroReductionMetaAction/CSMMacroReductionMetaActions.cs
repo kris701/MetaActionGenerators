@@ -7,16 +7,8 @@ using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Overloads;
 using PDDLSharp.Models.PDDL.Problem;
-using PDDLSharp.Parsers.FastDownward.Plans;
 using PDDLSharp.Parsers.PDDL;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
 {
@@ -115,7 +107,7 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             var parser = new PDDLParser(listener);
             var enhanced = parser.ParseAs<DomainDecl>(new FileInfo(domain));
             var candidates = enhanced.Actions.Where(x => !Domain.Actions.Any(y => x.Name == y.Name)).ToList();
-            foreach(var candidate in candidates)
+            foreach (var candidate in candidates)
             {
                 if (candidate.Preconditions is AndExp and)
                 {
@@ -143,7 +135,7 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             var codeGenerator = new PDDLCodeGenerator(listener);
             codeGenerator.Generate(Domain, Path.Combine(tempPath, "target", "domain.pddl"));
             int counter = 1;
-            foreach(var problem in Problems)
+            foreach (var problem in Problems)
                 codeGenerator.Generate(problem, Path.Combine(tempPath, "target", "learn", $"p{counter++}.pddl"));
         }
 

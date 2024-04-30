@@ -29,8 +29,8 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             if (Domain.Predicates == null)
                 throw new Exception("No predicates defined in domain!");
             if (Args.GetArgument<string>("cpddlOutput") != "")
-            { 
-                if(!File.Exists(Args.GetArgument<string>("cpddlOutput")))
+            {
+                if (!File.Exists(Args.GetArgument<string>("cpddlOutput")))
                     throw new FileNotFoundException($"Could not find the CPDDL Output file: {Args.GetArgument<string>("cpddlOutput")}");
             }
             else if (!File.Exists(Args.GetArgument<string>("cpddlExecutable")))
