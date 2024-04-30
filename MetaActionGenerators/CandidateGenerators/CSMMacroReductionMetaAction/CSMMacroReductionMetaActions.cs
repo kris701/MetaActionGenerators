@@ -38,7 +38,6 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             SetupTempFilesAndScripts(tempPath, csmPath);
 
             var macros = RunMUM(tempPath);
-            macros.AddRange(RunBLOOMA(tempPath));
 
             var candidates = new List<ActionDecl>();
             foreach (var macro in macros)
@@ -78,34 +77,6 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             return GetNewActions(Path.Combine(tempPath, "target", "domain_mum.pddl"));
         }
 
-        private List<ActionDecl> RunBLOOMA(string tempPath)
-        {
-            var doLog = Args.GetArgument<bool>("log");
-            using (ArgsCaller csmCaller = new ArgsCaller(Path.Combine(tempPath, "scripts", "learn-bloma.sh")))
-            {
-                csmCaller.StdOut += (s, o) =>
-                {
-                    if (doLog)
-                        Console.WriteLine(o.Data);
-                };
-                csmCaller.StdErr += (s, o) =>
-                {
-                    if (doLog)
-                        Console.WriteLine(o.Data);
-                };
-                csmCaller.Arguments.Add("../target", "");
-                csmCaller.Arguments.Add("lama-script-fixed", "");
-                csmCaller.Process.StartInfo.WorkingDirectory = Path.Combine(tempPath, "scripts");
-                if (csmCaller.Run() != 0)
-                    throw new Exception("CSM failed!");
-            }
-
-            if (!File.Exists(Path.Combine(tempPath, "target", "domain_bloma.pddl")))
-                return new List<ActionDecl>();
-
-            return GetNewActions(Path.Combine(tempPath, "target", "domain_bloma.pddl"));
-        }
-
         private List<ActionDecl> GetNewActions(string domain)
         {
             var listener = new ErrorListener();
@@ -113,12 +84,8 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             var enhanced = parser.ParseAs<DomainDecl>(new FileInfo(domain));
             var candidates = enhanced.Actions.Where(x => !Domain.Actions.Any(y => x.Name == y.Name)).ToList();
             foreach (var candidate in candidates)
-            {
                 if (candidate.Preconditions is AndExp and)
-                {
                     and.Children.RemoveAll(x => x is PredicateExp pred && pred.Name.ToUpper().StartsWith("STAI"));
-                }
-            }
             return candidates;
         }
 
@@ -133,6 +100,12 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             var text = GetLamaScript();
             text = text.Replace("{{FDPATH}}", PathHelper.RootPath(Args.GetArgument<string>("fastDownwardPath")));
             File.WriteAllText(Path.Combine(tempPath, "scripts", "lama-script-fixed"), text);
+            using (ArgsCaller csmMod = new ArgsCaller("chmod"))
+            {
+                csmMod.Arguments.Add("+x","");
+                csmMod.Arguments.Add(Path.Combine(tempPath, "scripts", "lama-script-fixed"), "");
+                csmMod.Run();
+            }
 
             Directory.CreateDirectory(Path.Combine(tempPath, "target", "learn"));
             Directory.CreateDirectory(Path.Combine(tempPath, "target", "testing"));
