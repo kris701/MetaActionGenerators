@@ -27,6 +27,11 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
 
         internal override List<ActionDecl> GenerateCandidatesInner()
         {
+            if (!File.Exists(Args.GetArgument<string>("csmPath")))
+                throw new FileNotFoundException($"Could not find the CSM folder: {Args.GetArgument<string>("csmPath")}");
+            if (!File.Exists(Args.GetArgument<string>("fastDownwardPath")))
+                throw new FileNotFoundException($"Could not find the Fast Downward executable file: {Args.GetArgument<string>("fastDownwardPath")}");
+
             var csmPath = PathHelper.RootPath(Args.GetArgument<string>("csmPath"));
             var tempPath = PathHelper.RootPath(Args.GetArgument<string>("tempFolder"));
 
@@ -148,7 +153,7 @@ namespace MetaActionGenerators.CandidateGenerators.CSMMacroReductionMetaAction
             using (Stream stream = assembly.GetManifestResourceStream(resourcePath))
             using (StreamReader reader = new StreamReader(stream))
             {
-                return reader.ReadToEnd();
+                return reader.ReadToEnd().Replace("\r\n","\n");
             }
         }
 
