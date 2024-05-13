@@ -1,4 +1,5 @@
-﻿using MetaActionGenerators.ArgumentSystem;
+﻿using MacroGenerators;
+using MetaActionGenerators.ArgumentSystem;
 using MetaActionGenerators.CandidateGenerators.MacroReductionMetaAction;
 using MetaActionGenerators.Helpers;
 using PDDLSharp.CodeGenerators.PDDL;
@@ -10,7 +11,6 @@ using PDDLSharp.Models.PDDL.Overloads;
 using PDDLSharp.Models.PDDL.Problem;
 using PDDLSharp.Parsers.FastDownward.Plans;
 using PDDLSharp.Parsers.PDDL;
-using PDDLSharp.Toolkit.MacroGenerators;
 
 namespace MetaActionGenerators.CandidateGenerators
 {
