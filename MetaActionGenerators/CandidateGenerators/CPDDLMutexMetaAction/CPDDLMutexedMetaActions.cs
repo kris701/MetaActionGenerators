@@ -42,7 +42,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                 cpddlOut = File.ReadAllText(Args.GetArgument<string>("cpddlOutput"));
             else
                 cpddlOut = ExecuteCPDDL(decl);
-            var rules = ParseCPDDLOutput(cpddlOut);
+            var rules = CPDDLParser.ParseCPDDLOutput(cpddlOut);
 
             var candidates = new List<ActionDecl>();
             foreach (var predicate in Domain.Predicates.Predicates)
@@ -116,146 +116,111 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             return File.ReadAllText(Path.Combine(Args.GetArgument<string>("tempFolder"), "output.txt"));
         }
 
-        private List<List<PredicateRule>> ParseCPDDLOutput(string text)
-        {
-            var rules = new List<List<PredicateRule>>();
-
-            var lines = text.Split(Environment.NewLine);
-            foreach (var line in lines)
-            {
-                if (line.EndsWith(":=1"))
-                {
-                    var inner = line.Substring(line.IndexOf('{') + 1, line.IndexOf('}') - line.IndexOf('{') - 1);
-                    var subRules = new List<PredicateRule>();
-                    var subRulesStr = inner.Split(',');
-                    bool valid = true;
-                    foreach (var subRule in subRulesStr)
-                    {
-                        var subRuleStr = subRule.Trim();
-                        var predName = subRuleStr;
-                        if (subRuleStr.Contains(' '))
-                            predName = subRuleStr.Substring(0, subRuleStr.IndexOf(' '));
-                        if (predName.StartsWith("NOT-"))
-                        {
-                            valid = false;
-                            break;
-                        }
-                        var fixArgs = new List<string>();
-                        if (subRuleStr.Contains(' '))
-                        {
-                            var args = subRuleStr.Substring(subRuleStr.IndexOf(' ')).Split(' ').ToList();
-                            args.RemoveAll(x => x == "");
-                            for (int i = 0; i < args.Count; i++)
-                            {
-                                if (args[i].StartsWith('C'))
-                                    fixArgs.Add(args[i].Substring(0, args[i].IndexOf(':')));
-                                else if (args[i].StartsWith('V'))
-                                    fixArgs.Add(args[i].Substring(0, args[i].IndexOf(':')));
-                                else
-                                    valid = false;
-                            }
-                            if (!valid)
-                                break;
-                        }
-                        subRules.Add(new PredicateRule(predName, fixArgs));
-                    }
-
-                    if (valid)
-                        rules.Add(subRules);
-                }
-            }
-
-            // Make sure rule argument IDs are unique 
-            var index = 0;
-            foreach (var ruleSet in rules)
-            {
-                foreach (var rule in ruleSet)
-                    for (int i = 0; i < rule.Args.Count; i++)
-                        if (rule.Args[i].StartsWith('C'))
-                            rule.Args[i] = $"C{index}_{rule.Args[i].Substring(1)}";
-                index++;
-            }
-
-            rules = rules.OrderBy(x => x.Count).ToList();
-
-            return rules;
-        }
-
         private List<ActionDecl> GeneateInvariantSafeCandidates(List<List<PredicateRule>> rules, PDDLDecl pddlDecl, PredicateExp predicate)
         {
-            var candidateOptions = InvGen(rules, new Candidate(new List<IExp>(), new List<IExp>() { predicate }), pddlDecl.Domain, new List<List<PredicateRule>>());
+            var candidateOptions = UpholdAll(new Candidate(new List<IExp>(), new Dictionary<IExp, List<int>>() { { predicate, new List<int>() } }), rules, pddlDecl.Domain);
+            candidateOptions = candidateOptions.Distinct().ToList();
             int version = 0;
             var candidates = new List<ActionDecl>();
             foreach (var option in candidateOptions)
                 candidates.Add(GenerateMetaAction(
                     $"meta_{predicate.Name}_{version++}",
                     option.Preconditions,
-                    option.Effects));
+                    option.Effects.Keys.ToList()));
 
             return candidates;
         }
 
-        private List<Candidate> InvGen(List<List<PredicateRule>> rules, Candidate candidate, DomainDecl domain, List<List<PredicateRule>> covered)
+        private List<Candidate> UpholdAll(Candidate c, List<List<PredicateRule>> G, DomainDecl domain)
         {
-            var coveredNow = new List<List<PredicateRule>>(covered);
-            for (int i = 0; i < candidate.Effects.Count; i++)
+            var R = new List<Candidate>() { c };
+
+            var preCount = 0;
+            while (preCount != R.Count)
             {
-                var reference = GetReferencePredicate(candidate.Effects[i]);
-
-                foreach (var ruleSet in rules)
+                preCount = R.Count;
+                var index = 0;
+                foreach (var g in G)
                 {
-                    if (coveredNow.Contains(ruleSet))
-                        continue;
-                    if (!ruleSet.Any(x => x.Predicate == reference.Name))
-                        continue;
+                    var newR = new List<Candidate>();
+                    foreach (var r in R)
+                        newR.AddRange(Uphold(r, g, domain, index));
+                    R = newR.Distinct().ToList();
+                    index++;
+                }
+            }
 
-                    if (ruleSet.Count == 1)
+            return R;
+        }
+
+        private List<Candidate> Uphold(Candidate c, List<PredicateRule> g, DomainDecl domain, int index)
+        {
+            var R = new List<Candidate>();
+
+            foreach (var e in c.Effects)
+            {
+                if (e.Value.Contains(index))
+                    continue;
+
+                if (e.Key is NotExp)
+                    continue;
+                var reference = GetReferencePredicate(e.Key);
+                if (!g.Any(x => x.Predicate == reference.Name))
+                    continue;
+
+                e.Value.Add(index);
+
+                if (g.Count == 1)
+                {
+                    var target = GetMutatedBinaryIExp(e.Key, g[0], g[0], domain);
+                    if (!ContainsOrIsInvalid(target, c.Effects.Keys.ToList()))
                     {
-                        var target = GetMutatedBinaryIExp(candidate.Effects[i], ruleSet[0], ruleSet[0], domain);
-                        if (!candidate.Effects.Contains(target))
-                        {
-                            AddTargetToCandidate(candidate, target);
-                            i = -1;
-                            coveredNow.Add(ruleSet);
-                            break;
-                        }
+                        var cpy = c.Copy();
+                        AddTargetToCandidate(cpy, target, index);
+                        R.Add(cpy);
                     }
-                    else
+                }
+                else
+                {
+                    var sourceRule = g.First(x => x.Predicate == reference.Name);
+                    var others = g.Where(x => x != sourceRule);
+                    foreach (var otherRule in others)
                     {
-                        coveredNow.Add(ruleSet);
-                        var candidates = new List<Candidate>();
-                        var sourceRule = GetMatchingRule(candidate.Effects[i], ruleSet);
-                        var others = ruleSet.Where(x => x != sourceRule);
-                        foreach (var targetRule in others)
+                        var target = GetMutatedBinaryIExp(e.Key, sourceRule, otherRule, domain);
+                        if (!ContainsOrIsInvalid(target, c.Effects.Keys.ToList()))
                         {
-                            var target = GetMutatedBinaryIExp(candidate.Effects[i], sourceRule, targetRule, domain);
-                            if (!candidate.Effects.Contains(target))
-                            {
-                                var cpy = candidate.Copy();
-                                AddTargetToCandidate(cpy, target);
-                                candidates.AddRange(InvGen(rules, cpy, domain, coveredNow));
-                            }
+                            var cpy = c.Copy();
+                            AddTargetToCandidate(cpy, target, index);
+                            R.Add(cpy);
                         }
-                        return candidates;
                     }
                 }
             }
-            return new List<Candidate> { candidate };
+
+            if (R.Count == 0)
+                R.Add(c);
+
+            return R;
         }
 
-        private void AddTargetToCandidate(Candidate candidate, IExp target)
+        private bool ContainsOrIsInvalid(IExp exp, List<IExp> effects)
         {
-            candidate.Effects.Add(target);
+            if (effects.Contains(exp))
+                return true;
+            if (exp is NotExp not && effects.Contains(not.Child))
+                return true;
+            if (effects.Contains(new NotExp(exp)))
+                return true;
+            return false;
+        }
+
+        private void AddTargetToCandidate(Candidate candidate, IExp target, int index)
+        {
+            candidate.Effects.Add(target, new List<int>() { index });
             if (target is NotExp not)
                 candidate.Preconditions.Add(not.Child);
             else
                 candidate.Preconditions.Add(GenerateNegated(target));
-        }
-
-        private PredicateRule GetMatchingRule(IExp exp, List<PredicateRule> rules)
-        {
-            var predicate = GetReferencePredicate(exp);
-            return rules.First(x => x.Predicate == predicate.Name);
         }
 
         private IExp GetMutatedBinaryIExp(IExp exp, PredicateRule sourceRule, PredicateRule targetRule, DomainDecl domain)

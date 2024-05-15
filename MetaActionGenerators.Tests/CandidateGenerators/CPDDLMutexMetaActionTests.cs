@@ -10,7 +10,7 @@ namespace MetaActionGenerators.Tests.CandidateGenerators
     {
         [TestMethod]
         [DataRow("TestData/miconic/domain.pddl", 7, "TestData/miconic/p01.pddl", "TestData/miconic/p04.pddl", "TestData/miconic/p07.pddl")]
-        [DataRow("TestData/blocksworld/domain.pddl", 19, "TestData/blocksworld/p01.pddl", "TestData/blocksworld/p04.pddl", "TestData/blocksworld/p07.pddl")]
+        [DataRow("TestData/blocksworld/domain.pddl", 29, "TestData/blocksworld/p01.pddl", "TestData/blocksworld/p04.pddl", "TestData/blocksworld/p07.pddl")]
         [DataRow("TestData/satellite/domain.pddl", 9, "TestData/satellite/p01.pddl", "TestData/satellite/p04.pddl", "TestData/satellite/p07.pddl")]
         public void Can_GenerateCorrectAmount(string domainFile, int expected, params string[] problemFiles)
         {
