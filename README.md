@@ -210,3 +210,9 @@ An example of a meta action from this generator can be seen below:
 
 This generator simply takes a path, and outputs the meta actions contained in it.
 This is mostly just for debug purposes.
+
+This generator have the following arguments:
+
+|Argument|Description|Default|
+|--|--|--|
+|metaPath|A path to the folder containing the meta actions.||
