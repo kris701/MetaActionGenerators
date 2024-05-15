@@ -33,6 +33,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                             break;
                         }
                         var fixArgs = new List<string>();
+                        var types = new List<string>();
                         if (subRuleStr.Contains(' '))
                         {
                             var args = subRuleStr.Substring(subRuleStr.IndexOf(' ')).Split(' ').ToList();
@@ -40,16 +41,22 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                             for (int i = 0; i < args.Count; i++)
                             {
                                 if (args[i].StartsWith('C'))
+                                {
                                     fixArgs.Add(args[i].Substring(0, args[i].IndexOf(':')));
+                                    types.Add(args[i].Substring(args[i].IndexOf(':') + 1));
+                                }
                                 else if (args[i].StartsWith('V'))
+                                {
                                     fixArgs.Add(args[i].Substring(0, args[i].IndexOf(':')));
+                                    types.Add(args[i].Substring(args[i].IndexOf(':') + 1));
+                                }
                                 else
                                     valid = false;
                             }
                             if (!valid)
                                 break;
                         }
-                        subRules.Add(new PredicateRule(predName, fixArgs));
+                        subRules.Add(new PredicateRule(predName, fixArgs, types));
                     }
 
                     if (valid)

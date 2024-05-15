@@ -7,6 +7,8 @@ using PDDLSharp.Models.PDDL.Domain;
 using PDDLSharp.Models.PDDL.Expressions;
 using PDDLSharp.Models.PDDL.Overloads;
 using PDDLSharp.Models.PDDL.Problem;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 
@@ -118,7 +120,21 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 
         private List<ActionDecl> GeneateInvariantSafeCandidates(List<List<PredicateRule>> rules, PDDLDecl pddlDecl, PredicateExp predicate)
         {
-            var candidateOptions = UpholdAll(new Candidate(new List<IExp>(), new Dictionary<IExp, List<int>>() { { predicate, new List<int>() } }), rules, pddlDecl.Domain);
+            // We have to generate predicates for each type assignment that there exists rules for.
+            var targetsRules = rules.Where(x => x.Any(y => y.Predicate == predicate.Name)).ToList();
+            var candidateOptions = new List<Candidate>();
+            foreach(var g in targetsRules)
+            {
+                var targets = g.Where(x => x.Predicate == predicate.Name);
+                foreach(var target in targets)
+                {
+                    var newPredicate = new PredicateExp(predicate.Name);
+                    for(int i = 0; i < target.Args.Count; i++)
+                        newPredicate.Arguments.Add(new NameExp(predicate.Arguments[i].Name, new TypeExp(target.Types[i])));
+
+                    candidateOptions.AddRange(UpholdAll(new Candidate(new List<IExp>(), new Dictionary<IExp, List<int>>() { { newPredicate, new List<int>() } }), rules, pddlDecl.Domain));
+                }
+            }
             candidateOptions = candidateOptions.Distinct().ToList();
             int version = 0;
             var candidates = new List<ActionDecl>();
@@ -144,7 +160,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                 {
                     var newR = new List<Candidate>();
                     foreach (var r in R)
-                        newR.AddRange(Uphold(r, g, domain, index));
+                        newR.AddRange(Uphold(r, g, domain, index, G));
                     R = newR.Distinct().ToList();
                     index++;
                 }
@@ -153,7 +169,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             return R;
         }
 
-        private List<Candidate> Uphold(Candidate c, List<PredicateRule> g, DomainDecl domain, int index)
+        private List<Candidate> Uphold(Candidate c, List<PredicateRule> g, DomainDecl domain, int index, List<List<PredicateRule>> G)
         {
             var R = new List<Candidate>();
 
@@ -162,13 +178,12 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                 if (e.Value.Contains(index))
                     continue;
 
-                if (e.Key is NotExp)
-                    continue;
                 var reference = GetReferencePredicate(e.Key);
-                if (!g.Any(x => x.Predicate == reference.Name))
+                if (!g.Any(x => x.IsEqual(reference)))
                     continue;
 
                 e.Value.Add(index);
+                var refs = ReferencedIn(reference, G);
 
                 if (g.Count == 1)
                 {
@@ -176,7 +191,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                     if (!ContainsOrIsInvalid(target, c.Effects.Keys.ToList()))
                     {
                         var cpy = c.Copy();
-                        AddTargetToCandidate(cpy, target, index);
+                        AddTargetToCandidate(cpy, target, refs);
                         R.Add(cpy);
                     }
                 }
@@ -190,7 +205,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                         if (!ContainsOrIsInvalid(target, c.Effects.Keys.ToList()))
                         {
                             var cpy = c.Copy();
-                            AddTargetToCandidate(cpy, target, index);
+                            AddTargetToCandidate(cpy, target, refs);
                             R.Add(cpy);
                         }
                     }
@@ -201,6 +216,19 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
                 R.Add(c);
 
             return R;
+        }
+
+        private List<int> ReferencedIn(PredicateExp pred, List<List<PredicateRule>> G)
+        {
+            var retList = new List<int>();
+            var index = 0;
+            foreach (var g in G)
+            {
+                if (g.Any(x => x.IsEqual(pred)))
+                    retList.Add(index);
+                index++;
+            }
+            return retList;
         }
 
         private bool ContainsOrIsInvalid(IExp exp, List<IExp> effects)
@@ -214,9 +242,9 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             return false;
         }
 
-        private void AddTargetToCandidate(Candidate candidate, IExp target, int index)
+        private void AddTargetToCandidate(Candidate candidate, IExp target, List<int> index)
         {
-            candidate.Effects.Add(target, new List<int>() { index });
+            candidate.Effects.Add(target, new List<int>(index));
             if (target is NotExp not)
                 candidate.Preconditions.Add(not.Child);
             else
@@ -229,7 +257,7 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
 
             var sourceRuleArgs = new List<string>(sourceRule.Args);
             var targetRuleArgs = new List<string>(targetRule.Args);
-            var sample = domain.Predicates!.Predicates.First(x => x.Name == targetRule.Predicate).Copy();
+            var sample = GetPredicateExpFromRule(targetRule);
             for (int i = 0; i < targetRuleArgs.Count; i++)
             {
                 if (targetRuleArgs[i].StartsWith('V'))
@@ -243,6 +271,14 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
             else if (exp is NotExp not2 && not2.Child is PredicateExp)
                 return sample;
             throw new Exception();
+        }
+
+        private PredicateExp GetPredicateExpFromRule(PredicateRule rule)
+        {
+            var newPredicate = new PredicateExp(rule.Predicate);
+            for (int i = 0; i < rule.Args.Count; i++)
+                newPredicate.Arguments.Add(new NameExp($"?{rule.Args[i]}", new TypeExp(rule.Types[i])));
+            return newPredicate;
         }
 
         private PredicateExp GetReferencePredicate(IExp exp)
