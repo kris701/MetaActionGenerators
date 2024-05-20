@@ -151,16 +151,24 @@ namespace MetaActionGenerators.CandidateGenerators.CPDDLMutexMetaAction
         {
             var R = new List<Candidate>() { c };
 
-            var preCount = 0;
-            while (preCount != R.Count)
+            var any = true;
+            while (any)
             {
-                preCount = R.Count;
+                any = false;
                 var index = 0;
                 foreach (var g in G)
                 {
                     var newR = new List<Candidate>();
                     foreach (var r in R)
                         newR.AddRange(Uphold(r, g, domain, index, G));
+                    foreach(var r in newR)
+                    {
+                        if (!R.Contains(r))
+                        {
+                            any = true;
+                            break;
+                        }
+                    }
                     R = newR.Distinct().ToList();
                     index++;
                 }

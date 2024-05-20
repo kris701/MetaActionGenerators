@@ -6,7 +6,7 @@
     "WSL": {
       "commandName": "WSL2",
       "distributionName": "",
-      "commandLineArgs": "MetaActionGenerators.CLI.dll --out out --domain /home/kris/P10/Dependencies/focused-meta-actions-benchmarks/Benchmarks/blocksworld/domain.pddl --problems /home/kris/P10/Dependencies/focused-meta-actions-benchmarks/Benchmarks/blocksworld/training/p05.pddl --generator CPDDLMutexed --args cpddlOutput;/home/kris/P10/Dependencies/focused-meta-actions-benchmarks/CPDDLGroups/blocksworld.txt tempFolder;tmp",
+      "commandLineArgs": "MetaActionGenerators.CLI.dll --out out --domain /home/kris/P10/Dependencies/focused-meta-actions-benchmarks/Benchmarks/depots/domain.pddl --problems /home/kris/P10/Dependencies/focused-meta-actions-benchmarks/Benchmarks/depots/training/p05.pddl --generator CPDDLMutexed --args cpddlOutput;/home/kris/P10/Dependencies/focused-meta-actions-benchmarks/CPDDLGroups/depots.txt tempFolder;tmp",
       "workingDirectory": ""
     }
   }
